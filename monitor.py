@@ -9,7 +9,6 @@ from datetime import datetime
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
-# Tradutor de meses bonitinho
 MAPA_MESES = {
     "JANEIRO": "01 - Janeiro", "FEVEREIRO": "02 - Fevereiro", "MARCO": "03 - Marco",
     "MARÇO": "03 - Marco", "ABRIL": "04 - Abril", "MAIO": "05 - Maio",
@@ -18,7 +17,6 @@ MAPA_MESES = {
     "NOVEMBRO": "11 - Novembro", "DEZEMBRO": "12 - Dezembro"
 }
 
-# Configurações de pastas
 RAIZ_REDE = "./REDE_IML" 
 PASTA_SCANNER = "./pasta_scanner" 
 PASTA_BACKUP = "./arquivos_processados"
@@ -69,7 +67,6 @@ class VigiaDePasta(FileSystemEventHandler):
                     dono_encontrado = None
                     matricula_dono = None
                     
-                    # 1. Busca por Matrícula ou Nome
                     for matricula, nome in lista_servidores.items():
                         m_base = matricula.upper().replace("X", "").replace(".", "").replace("-", "")
                         if m_base in texto_limpo or nome.upper() in texto_upper:
@@ -87,14 +84,12 @@ class VigiaDePasta(FileSystemEventHandler):
                             ano_doc = busca_data.group(2)
                             nome_mes = MAPA_MESES[mes_txt]
                         else:
-                            # Plano B: Data do sistema
                             agora = datetime.now()
                             mes_n = agora.strftime("%m")
                             meses_b = ["", "01 - Janeiro", "02 - Fevereiro", "03 - Marco", "04 - Abril", "05 - Maio", "06 - Junho", "07 - Julho", "08 - Agosto", "09 - Setembro", "10 - Outubro", "11 - Novembro", "12 - Dezembro"]
                             nome_mes = meses_b[int(mes_n)]
                             ano_doc = agora.strftime("%Y")
 
-                        # 3. Organização de Pastas
                         pasta_serv = buscar_pasta_do_servidor(RAIZ_REDE, matricula_dono)
                         if not pasta_serv:
                             pasta_serv = os.path.join(RAIZ_REDE, f"{dono_encontrado} - Matricula {matricula_dono}")
@@ -102,7 +97,6 @@ class VigiaDePasta(FileSystemEventHandler):
                         p_destino = os.path.join(pasta_serv, ano_doc)
                         os.makedirs(p_destino, exist_ok=True)
                         
-                        # 4. SALVAMENTO (Novo Padrão: 01 - Janeiro 2026 - Pag 1.pdf)
                         nome_f = f"{nome_mes} {ano_doc} - Pag {num_pagina+1}.pdf"
                         c_final = os.path.join(p_destino, nome_f)
                         
@@ -114,7 +108,6 @@ class VigiaDePasta(FileSystemEventHandler):
                     else:
                         print(f"   ❌ [PÁG {num_pagina+1}] Erro: Servidor não identificado.")
 
-            # Mover original para backup
             os.makedirs(PASTA_BACKUP, exist_ok=True)
             shutil.move(caminho_arquivo, os.path.join(PASTA_BACKUP, nome_original))
             print("🚀 Tudo pronto! Arquivo movido para a pasta de processados.")
